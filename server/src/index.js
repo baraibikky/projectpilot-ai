@@ -183,23 +183,60 @@ app.post('/api/quiz', async (req, res) => {
   }
 });
 
-// Builder API endpoint
+// Builder API endpoint — dedicated AI Builder agent
 app.post('/api/builder', async (req, res) => {
   try {
     const { prompt, isProblemStatement } = req.body;
     const apiKey = getApiKey(req);
-    // Since we just need to return a plan and a button flag, we can mock it or use Mentor intent
+
+    const builderPrompt = `You are an expert software architect and senior developer.
+A user wants to build: "${prompt}"
+
+Provide a concise, practical project plan in this exact format:
+
+🎯 **What We're Building**
+[1-2 sentence summary of the product]
+
+🛠️ **Recommended Tech Stack**
+- Frontend: [framework]
+- Backend: [framework/language]
+- Database: [database]
+- AI/Extra: [optional AI or libraries]
+
+✨ **Core Features (MVP)**
+1. [Feature 1]
+2. [Feature 2]
+3. [Feature 3]
+4. [Feature 4]
+
+🗺️ **Quick Build Plan (4 Weeks)**
+- Week 1: [Setup + Database schema]
+- Week 2: [Core backend API]
+- Week 3: [Frontend UI + API connection]
+- Week 4: [Polish, test, deploy]
+
+💡 **Pro Tip**
+[One specific actionable tip to make this project stand out]
+
+Keep the response concise, practical and encouraging. No fluff.`;
+
     const result = await dispatchAgentRoute({
       intent: 'MENTOR',
-      payload: { message: `Analyze this problem statement and provide a practical project plan/stack/features: ${prompt}` },
+      payload: {
+        message: builderPrompt,
+        history: [],
+        activeProject: null,
+        studentProfile: {}
+      },
       apiKey
     });
-    
-    // We add showBuildButton if it was a problem statement submission
-    res.json({ 
-      success: true, 
-      reply: result.data, 
-      showBuildButton: isProblemStatement === true 
+
+    const isActionable = (prompt || '').length > 15;
+
+    res.json({
+      success: true,
+      reply: result.data,
+      showBuildButton: isActionable
     });
   } catch (error) {
     console.error('Builder API error:', error);
