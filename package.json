@@ -4,8 +4,8 @@
   "description": "ProjectPilot AI - Intelligent Final-Year Project Mentor & Blueprint Platform",
   "scripts": {
     "server": "node server/src/index.js",
-    "client": "npm.cmd --prefix client run dev",
-    "build": "npm.cmd --prefix client run build",
+    "client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
     "test": "node test_endpoints.js"
   }
 }
